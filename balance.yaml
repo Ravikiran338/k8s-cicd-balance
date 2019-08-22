@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: balanceservice
+  labels:
+    app: msa-banking-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      name: balance-service
+      app: msa-banking-app
+
+  template:
+    metadata:
+      name: balance-msa-pod
+      labels:
+        name: balance-service
+        app: msa-banking-app
+    spec:
+      containers:
+      - name: balance-container
+        image: ${REPOSITORY_TAG}
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 300m
+            memory: 600Mi
+
+      imagePullSecrets:
+          - name: myregistrykey
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: balanceservice
+  labels:
+    name: balance-service
+    app: msa-banking-app
+
+spec:
+  type: ClusterIP
+  ports:
+  -  protocol: TCP
+     targetPort: 9086
+     port: 9086
+
+  selector:
+    name: balance-service
+    app: msa-banking-app
